@@ -1,0 +1,87 @@
+//display calendar upon click of calendar icon
+<!DOCTYPE html>
+<html>
+
+<body>
+    <h2 class="prod-index-header">Productions <i class="btn btn-light far fa-calendar-alt py-1 px-2" style="font-size:22px"></i></h2>
+    <div id="calendar" class="prod-index-cal mb-4" style="width:750px"></div>
+    <script>
+    $(document).ready(function () {
+        var events = [];
+        var i = 0;
+        @foreach (string[] e in ViewData["events"] as string[][])
+        {
+            @: events[i] = { id: "@e[0]", title: "@e[1]", start: "@e[2]", end: "@e[3]", seats: "@e[4]", color: "@e[5]", prod:
+            "@e[6]" };
+            @: i += 1;
+        }
+
+        //checks if calendar was displayed prior to search
+        if ("@((string)ViewData["calDisplay"])" == "true") {
+            showCalendar(events);
+        }
+        $(".fa-calendar-alt").on("click", function () {
+
+            if ($("#calendar").children().length > 0) {
+            $('#calendar').fullCalendar('destroy');
+            $("input[name='calBool']").val("false");
+            }
+            else {
+            showCalendar(events);
+
+            }
+        })
+    });
+
+    //code for fullcalendar.io
+    function showCalendar(events)
+    {
+        $('#calendar').fullCalendar({
+            header: { center: 'month,agendaWeek' },
+            views: {
+                week: {
+                allDaySlot: false
+                }
+            },
+            events: events,
+            eventClick: function (calEvent) {
+                var idClass = "event-prod-" + calEvent.prod;
+                //if event is not currently selected, then select
+                if (!$(this).hasClass("active-event")) {
+                    $(this).css('border', '2px solid var(--main-secondary-color)'); //'this' refers to fc-event class
+                    $(this).addClass("active-event " + idClass);
+                    $('.prod-' + calEvent.prod).css('border', '2px solid var(--main-secondary-color)');
+                    $('.prod-' + calEvent.prod).addClass("active-prod");
+                }
+                //if event is currently selected, then deselect
+                //tracks if a production has multiple events selected
+                else {
+                    var tracker = $(".active-event." + idClass).length;
+                    if (tracker == 1) {
+                        $(this).css('border', '2px solid transparent'); //'this' refers to fc-event class
+                        $(this).removeClass("active-event " + idClass);
+                        $('.prod-' + calEvent.prod).css('border', '2px solid rgba(0, 0, 0, 0.125)');
+                        $('.prod-' + calEvent.prod).removeClass("active-prod " + idClass);
+                    }
+                    else if (tracker > 1) {
+                        $(this).css('border', '2px solid transparent'); //'this' refers to fc-event class
+                        $(this).removeClass("active-event " + idClass);
+                        tracker -= 1;
+                    }
+                    else {
+                        alert("An error has occured.");
+                    }
+                }
+
+            },
+            allDayDefault: false
+        });
+
+        $("input[name='calBool']").val("true");
+    }
+    </script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="./js/portfolio.js"></script>
+</body>
+
+</html>
